@@ -195,13 +195,6 @@ export default function HomePage() {
           Descargar Excel actualizado
         </button>
         <div className="flex justify-center gap-3">
-        <button
-          onClick={() => handleWhatsApp(telefono, cliente)}
-          className="bg-green-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-green-600 transition"
-        >
-          Enviar WhatsApp
-        </button>
-
         {/* Botón FACTURACIÓN */}
         <button
           onClick={() => {
