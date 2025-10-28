@@ -156,6 +156,7 @@ export default function HomePage() {
           <div className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-lg text-center">
             <h2 className="text-2xl font-bold mb-2">{nombreCliente}</h2>
             <p className="text-gray-600 mb-2">Código: {codigo}</p>
+            <p className="text-gray-600 mb-2">Telefono: {telefono}</p>
             <p className="text-gray-600 mb-4">🛒 {cliente?.Productos}</p>
 
             <div className="flex justify-center gap-3 mb-3">
