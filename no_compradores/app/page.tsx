@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx';
 
 interface Cliente {
   Codigo?: string | number;
-  ['Codigo Cliente']?: string | number;
+  ['Codigo']?: string | number;
   Cliente?: string;
   Nombre?: string;
   Productos?: string;
@@ -214,7 +214,7 @@ export default function HomePage() {
                   }`}
                 >
                   <p>{c.Cliente || c.Nombre}</p>
-                  <p className="text-sm text-gray-500">Código: {c.Codigo || c['Codigo Cliente']}</p>
+                  <p className="text-sm text-gray-500">Código: {c.Codigo || c['Codigo']}</p>
                 </div>
               );
             })
