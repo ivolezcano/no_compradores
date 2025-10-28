@@ -196,6 +196,10 @@ export default function HomePage() {
           Descargar Excel actualizado
         </button>
         <div className="flex justify-center gap-3">
+          <br></br>
+          <br></br>
+          <br></br>
+          <br></br>
         {/* Botón FACTURACIÓN */}
         <button
           onClick={() => {
