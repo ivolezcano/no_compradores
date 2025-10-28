@@ -11,6 +11,7 @@ interface Cliente {
   Telefono?: string | number;
   Resultado?: string;
   Motivo?: string;
+  Aparecio?: string;
   [key: string]: any;
 }
 
@@ -31,8 +32,12 @@ export default function HomePage() {
         const arrayBuffer = await res.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer, { type: 'array' });
         const sheet = workbook.Sheets['retorno'];
+
         if (sheet) {
-          const json: Cliente[] = XLSX.utils.sheet_to_json(sheet);
+          const json: Cliente[] = XLSX.utils.sheet_to_json<Cliente>(sheet).map((c) => ({
+            Aparecio: c.Aparecio || 'No',
+            ...c
+          }));
           setData(json);
         } else {
           console.error('❌ No se encontró la hoja "retorno"');
@@ -46,19 +51,30 @@ export default function HomePage() {
     fetchExcel();
   }, []);
 
+  // 💾 Guardar el último índice en localStorage
+  useEffect(() => {
+    localStorage.setItem('ultimoIndex', currentIndex.toString());
+  }, [currentIndex]);
+
+  // 🔹 Calcular el cliente actual (solo que no esté pendiente ni marcado)
+  const clientesNoPendientes = data.filter(
+    (c) => !['Pendiente ⏳', 'Compró ✅', 'No compró ❌'].includes(c.Resultado || '')
+  );
+  const cliente = clientesNoPendientes[currentIndex];
+
   // 📞 Enviar WhatsApp
   const handleWhatsApp = (telefono: string | number, cliente: Cliente) => {
     const mensaje = encodeURIComponent(`Hola ${cliente.Cliente || cliente.Nombre || 'Cliente'}!`);
     window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
 
-    // ✅ Marcar como pendiente
     const updated = [...data];
     const idx = data.indexOf(cliente);
-    updated[idx] = { ...cliente, Resultado: 'Pendiente ⏳' };
+    updated[idx] = { 
+      ...cliente, 
+      Resultado: 'Pendiente ⏳',
+      Aparecio: 'Sí'
+    };
     setData(updated);
-
-    // Avanza al siguiente
-    setCurrentIndex((prev) => prev + 1);
   };
 
   // 💾 Registrar resultado (compra o no compra)
@@ -70,8 +86,8 @@ export default function HomePage() {
 
     if (idx !== -1) {
       updated[idx] = compra
-        ? { ...selectedCliente, Resultado: 'Compró ✅', Motivo: '' }
-        : { ...selectedCliente, Resultado: 'No compró ❌', Motivo: motivo || '' };
+        ? { ...selectedCliente, Resultado: 'Compró ✅', Motivo: '', Aparecio: 'Sí' }
+        : { ...selectedCliente, Resultado: 'No compró ❌', Motivo: motivo || '', Aparecio: 'Sí' };
       setData(updated);
     }
 
@@ -80,7 +96,7 @@ export default function HomePage() {
     setSelectedCliente(null);
   };
 
-  // 📤 Exportar Excel (actualiza la hoja retorno)
+  // 📤 Exportar Excel actualizado
   const handleExport = () => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -88,8 +104,9 @@ export default function HomePage() {
     XLSX.writeFile(wb, 'base_no_compradores.xlsx');
   };
 
-  const pendientes = data.filter((c) => c.Resultado === 'Pendiente ⏳');
-  const clientesFiltrados = pendientes.filter((c) => {
+  // 📋 Clientes pendientes (aparecen en lateral)
+  const clientesPendientes = data.filter(c => c.Resultado === 'Pendiente ⏳');
+  const clientesFiltrados = clientesPendientes.filter(c => {
     const texto = (c.Cliente || c.Nombre || '').toString().toLowerCase();
     const codigo = (c.Codigo || c['Codigo Cliente'] || '').toString().toLowerCase();
     const term = searchTerm.toLowerCase();
@@ -112,20 +129,43 @@ export default function HomePage() {
       </div>
     );
 
-  const cliente = data[currentIndex];
-  const nombreCliente = cliente.Cliente || cliente.Nombre || 'Cliente';
-  const codigo = cliente.Codigo || cliente['Codigo Cliente'] || 'Sin código';
-  const telefono = cliente.Telefono?.toString() || '';
+  // 🔹 Información del cliente principal
+  const nombreCliente = cliente?.Cliente || cliente?.Nombre || 'Cliente';
+  const codigo = cliente?.Codigo || cliente?.['Codigo Cliente'] || 'Sin código';
+  const telefono = cliente?.Telefono?.toString() || '';
+
+  // 🔹 Funciones de navegación con flechas
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : prev));
+  };
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev < clientesNoPendientes.length - 1 ? prev + 1 : prev));
+  };
 
   return (
     <div className="flex flex-row min-h-screen p-4 bg-gray-50">
       {/* Panel principal */}
       <div className="flex flex-col items-center justify-center flex-1">
-        {currentIndex < data.length ? (
+        {cliente ? (
           <div className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-lg text-center">
             <h2 className="text-2xl font-bold mb-2">{nombreCliente}</h2>
             <p className="text-gray-600 mb-2">Código: {codigo}</p>
-            <p className="text-gray-600 mb-4">🛒 {cliente.Productos}</p>
+            <p className="text-gray-600 mb-4">🛒 {cliente?.Productos}</p>
+
+            <div className="flex justify-center gap-3 mb-3">
+              <button
+                onClick={() => handlePrev()}
+                className="bg-gray-300 text-gray-800 px-3 py-1 rounded-lg hover:bg-gray-400 transition"
+              >
+                ◀
+              </button>
+              <button
+                onClick={() => handleNext()}
+                className="bg-gray-300 text-gray-800 px-3 py-1 rounded-lg hover:bg-gray-400 transition"
+              >
+                ▶
+              </button>
+            </div>
 
             <div className="flex justify-center gap-3">
               <button
@@ -138,7 +178,7 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center">
-            <h2 className="text-xl mb-4">✅ Todos los registros vistos</h2>
+            <h2 className="text-xl mb-4">✅ Todos los registros revisados o pendientes están en la columna lateral</h2>
           </div>
         )}
 
@@ -163,23 +203,28 @@ export default function HomePage() {
 
         <div className="overflow-y-auto flex-1">
           {clientesFiltrados.length > 0 ? (
-            clientesFiltrados.map((c, i) => (
-              <div
-                key={i}
-                onClick={() => setSelectedCliente(c)}
-                className="p-2 border-b cursor-pointer hover:bg-gray-100 rounded transition"
-              >
-                <p className="font-medium">{c.Cliente || c.Nombre}</p>
-                <p className="text-sm text-gray-500">Código: {c.Codigo || c['Codigo Cliente']}</p>
-              </div>
-            ))
+            clientesFiltrados.map((c, i) => {
+              const isCurrent = selectedCliente === c;
+              return (
+                <div
+                  key={i}
+                  onClick={() => setSelectedCliente(c)}
+                  className={`p-2 border-b cursor-pointer rounded transition ${
+                    isCurrent ? 'bg-blue-100 font-semibold' : 'hover:bg-gray-100'
+                  }`}
+                >
+                  <p>{c.Cliente || c.Nombre}</p>
+                  <p className="text-sm text-gray-500">Código: {c.Codigo || c['Codigo Cliente']}</p>
+                </div>
+              );
+            })
           ) : (
             <p className="text-gray-400 text-center">No hay coincidencias</p>
           )}
         </div>
       </div>
 
-      {/* Popup de selección de pendiente */}
+      {/* Popups */}
       {selectedCliente && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl shadow-lg text-center w-80">
@@ -191,13 +236,13 @@ export default function HomePage() {
             <div className="flex justify-center gap-3 mb-3">
               <button
                 onClick={() => handleCompra(true)}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-600 transition"
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
               >
                 ¡Compró!
               </button>
               <button
                 onClick={() => setShowPopup(true)}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-red-600 transition"
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
               >
                 No compró
               </button>
@@ -205,7 +250,7 @@ export default function HomePage() {
 
             <button
               onClick={() => setSelectedCliente(null)}
-              className="bg-gray-300 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-400 transition"
+              className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
             >
               Cerrar
             </button>
@@ -213,7 +258,6 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Popup motivo */}
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl shadow-lg text-center w-80">
@@ -227,7 +271,7 @@ export default function HomePage() {
             <div className="flex justify-center gap-3">
               <button
                 onClick={() => handleCompra(false)}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-red-600 transition"
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
               >
                 Guardar
               </button>
@@ -236,7 +280,7 @@ export default function HomePage() {
                   setShowPopup(false);
                   setMotivo('');
                 }}
-                className="bg-gray-300 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-400 transition"
+                className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
               >
                 Cancelar
               </button>
