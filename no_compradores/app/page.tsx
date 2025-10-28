@@ -194,6 +194,28 @@ export default function HomePage() {
         >
           Descargar Excel actualizado
         </button>
+        <div className="flex justify-center gap-3">
+        <button
+          onClick={() => handleWhatsApp(telefono, cliente)}
+          className="bg-green-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-green-600 transition"
+        >
+          Enviar WhatsApp
+        </button>
+
+        {/* Botón FACTURACIÓN */}
+        <button
+          onClick={() => {
+            const codigoCliente = cliente?.Codigo || cliente?.['Codigo'] || 'Sin código';
+            const mensaje = encodeURIComponent(
+              `Hola chicas! Porfa necesito cambiar el número del cliente ${codigoCliente}`
+            );
+            window.open(`https://wa.me/5491123084191?text=${mensaje}`, '_blank');
+          }}
+          className="bg-yellow-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-yellow-600 transition"
+        >
+          FACTURACIÓN
+        </button>
+      </div>
       </div>
 
       {/* Panel lateral derecho */}
