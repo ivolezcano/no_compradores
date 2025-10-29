@@ -65,11 +65,11 @@ export default function HomePage() {
   // 📞 Enviar WhatsApp
   const handleWhatsApp = (telefono: string | number, cliente: Cliente) => {
     const mensaje = encodeURIComponent(
-      `¡Hola ${nombreCliente}! ¿Cómo estás? Soy Lourdes de Distribuidora Celestino.` +
-      `Notamos que hace algún tiempo no realizaste una compra con nosotros, por eso queremos regalarte un cupón de $10.000 para tu próxima compra con el código *lourdes10k*` +
-      `Además, tenemos promociones exclusivas que no te podés perder 💥` +
-      `¡Y no olvides que ofrecemos envíos gratis a CABA y algunas zonas del Gran Buenos Aires!` +
-      `Si querés aprovechar tu cupón, pedime el link para hacer tu compra`
+      `¡Hola ${nombreCliente}! ¿Cómo estás? Soy Lourdes de Distribuidora Celestino.\n` +
+      ` Notamos que hace algún tiempo no realizaste una compra con nosotros, por eso queremos regalarte un cupón de $10.000 para tu próxima compra con el código \n*lourdes10k*\n` +
+      ` Además, tenemos promociones exclusivas que no te podés perder\n` +
+      ` ¡Y no olvides que ofrecemos envíos gratis a CABA y algunas zonas del Gran Buenos Aires!\n` +
+      ` *Si querés aprovechar tu cupón, pedime el link para hacer tu compra*`
     );
     window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
 
