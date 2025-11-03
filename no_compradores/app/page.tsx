@@ -137,7 +137,7 @@ export default function HomePage() {
 
   // 🔹 Información del cliente principal
   const nombreCliente = cliente?.Cliente || cliente?.Nombre || 'Cliente';
-  const codigo = cliente?.Codigo || cliente?.['Codigo Cliente'] || 'Sin código';
+  const codigo = cliente?.Codigo || cliente?.['Codigo'] || 'Sin código';
   const telefono = cliente?.Telefono?.toString() || '';
 
   // 🔹 Funciones de navegación con flechas
