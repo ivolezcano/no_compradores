@@ -65,7 +65,7 @@ export default function HomePage() {
   // 📞 Enviar WhatsApp
   const handleWhatsApp = (telefono: string | number, cliente: Cliente) => {
     const mensaje = encodeURIComponent(
-      `¡Hola ${nombreCliente}! ¿Cómo estás? Soy Teo de Distribuidora Celestino.\n` +
+      `¡Hola ${nombreCliente}! ¿Cómo estás? Soy Lourdes de Distribuidora Celestino.\n` +
       ` Notamos que hace algún tiempo no realizaste una compra con nosotros, por eso queremos regalarte un cupón de $10.000 para tu próxima compra con el código \n*lourdes10k*\n` +
       ` Además, tenemos promociones exclusivas que no te podés perder\n` +
       ` ¡Y no olvides que ofrecemos envíos gratis a CABA y algunas zonas del Gran Buenos Aires!\n` +
@@ -240,6 +240,7 @@ export default function HomePage() {
                   }`}
                 >
                   <p>{c.Cliente || c.Nombre}</p>
+                  <p className="text-gray-600 mb-4">🛒 {cliente?.Productos}</p>
                   <p className="text-sm text-gray-500">Código: {c.Codigo || c['Codigo']}</p>
                 </div>
               );
