@@ -227,7 +227,7 @@ export default function HomePage() {
           className="border p-2 rounded-lg mb-3 w-full"
         />
 
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1 max-h-[calc(100vh-150px)]">
           {clientesFiltrados.length > 0 ? (
             clientesFiltrados.map((c, i) => {
               const isCurrent = selectedCliente === c;
