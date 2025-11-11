@@ -240,7 +240,7 @@ export default function HomePage() {
                   }`}
                 >
                   <p>{c.Cliente || c.Nombre}</p>
-                  <p className="text-gray-600 mb-4">🛒 {cliente?.Productos}</p>
+                  <p className="text-gray-600 mb-4">🛒 {c.Productos}</p>
                   <p className="text-sm text-gray-500">Código: {c.Codigo || c['Codigo']}</p>
                 </div>
               );
